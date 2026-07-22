@@ -1,0 +1,23 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "openmedpipe"
+version = "0.1.0"
+description = "A skeleton for building production medical-imaging AI pipelines."
+readme = "README.md"
+requires-python = ">=3.9"
+license = { text = "Apache-2.0" }
+authors = [{ name = "BARTEK LLC" }]
+keywords = ["medical-imaging", "ai", "pipeline", "mlops", "digital-pathology", "ophthalmology", "oct"]
+dependencies = ["numpy"]
+
+[project.optional-dependencies]
+web = ["fastapi", "uvicorn"]
+
+[project.urls]
+Homepage = "https://bartekllc.org"
+
+[tool.setuptools.packages.find]
+include = ["openmedpipe*"]

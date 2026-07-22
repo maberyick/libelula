@@ -1,0 +1,15 @@
+# Example pipeline config — copy to pipeline.yaml and edit.
+# The orchestrator/assistant can read this to decide what to run.
+pipeline:
+  name: example-imaging-pipeline
+  modality: generic-image        # e.g. oct-bscan, wsi, ct-volume
+  models:                        # ordered; later models can read earlier outputs
+    - threshold-segmenter
+    - region-scorer
+  qc:
+    fail_on_flag: false          # true = stop the run if QC flags a case
+assistant:
+  enabled: true
+  provider: ollama               # local; data stays on your hardware
+  model: llama3
+  mode: suggest                  # suggest | off  (never fully autonomous by default)

@@ -1,0 +1,13 @@
+# Template: wrap ONE model in its own container with a common contract.
+# Build:  docker build -f containers/Dockerfile.model -t my-model:latest .
+FROM python:3.11-slim
+WORKDIR /app
+# system deps for imaging libs (edit as needed)
+RUN apt-get update && apt-get install -y --no-install-recommends libgl1 && rm -rf /var/lib/apt/lists/*
+COPY pyproject.toml README.md ./
+COPY openmedpipe ./openmedpipe
+RUN pip install --no-cache-dir -e .
+# add your model weights + deps here
+# COPY weights/ /weights/
+ENV MODEL_NAME=my-segmenter
+CMD ["python", "-c", "print('replace with your model server / entrypoint')"]
