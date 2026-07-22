@@ -1,16 +1,16 @@
 """Minimal submission API stub (FastAPI).
 
     pip install -e ".[web]"
-    uvicorn fovea.web.app:app --reload
+    uvicorn libelula.web.app:app --reload
 
 POST a case; it runs through the pipeline and returns the report. Replace the
 in-memory demo with real storage + a queue for production.
 """
 from __future__ import annotations
 import numpy as np
-from fovea.models import example_model  # noqa: F401 (registers models)
-from fovea.assistant.suggest import suggest_pipeline
-from fovea.pipeline.orchestrator import run_case
+from libelula.models import example_model  # noqa: F401 (registers models)
+from libelula.assistant.suggest import suggest_pipeline
+from libelula.pipeline.orchestrator import run_case
 
 try:
     from fastapi import FastAPI

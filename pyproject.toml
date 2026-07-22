@@ -3,7 +3,7 @@ requires = ["setuptools>=61"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "fovea"
+name = "libelula"
 version = "0.1.0"
 description = "Fovea — an open skeleton for building production medical-imaging AI pipelines."
 readme = "README.md"
@@ -17,10 +17,11 @@ dependencies = ["numpy"]
 web = ["fastapi", "uvicorn"]
 
 [project.scripts]
-fovea = "fovea.cli:main"
+libe = "libelula.cli:main"
+libelula = "libelula.cli:main"
 
 [project.urls]
 Homepage = "https://bartekllc.org"
 
 [tool.setuptools.packages.find]
-include = ["fovea*"]
+include = ["libelula*"]

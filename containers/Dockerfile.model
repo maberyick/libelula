@@ -5,7 +5,7 @@ WORKDIR /app
 # system deps for imaging libs (edit as needed)
 RUN apt-get update && apt-get install -y --no-install-recommends libgl1 && rm -rf /var/lib/apt/lists/*
 COPY pyproject.toml README.md ./
-COPY fovea ./fovea
+COPY libelula ./libelula
 RUN pip install --no-cache-dir -e .
 # add your model weights + deps here
 # COPY weights/ /weights/

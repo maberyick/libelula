@@ -7,9 +7,9 @@ a run report. Replace the dummy image + example models with your own to build
 a real pipeline.
 """
 import numpy as np
-from fovea.models import example_model  # noqa: F401  (registers the models)
-from fovea.assistant.suggest import suggest_pipeline
-from fovea.pipeline.orchestrator import run_case
+from libelula.models import example_model  # noqa: F401  (registers the models)
+from libelula.assistant.suggest import suggest_pipeline
+from libelula.pipeline.orchestrator import run_case
 
 
 def main():

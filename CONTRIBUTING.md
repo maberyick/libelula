@@ -1,4 +1,4 @@
-# Contributing to OpenMedPipe
+# Contributing to libélula
 
 Thanks for helping! This is a skeleton, so the bar for contributions is: **does it keep the pattern clean and general** (not tied to one model/vendor/dataset)?
 
