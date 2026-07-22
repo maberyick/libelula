@@ -7,9 +7,9 @@ a run report. Replace the dummy image + example models with your own to build
 a real pipeline.
 """
 import numpy as np
-from openmedpipe.models import example_model  # noqa: F401  (registers the models)
-from openmedpipe.assistant.suggest import suggest_pipeline
-from openmedpipe.pipeline.orchestrator import run_case
+from fovea.models import example_model  # noqa: F401  (registers the models)
+from fovea.assistant.suggest import suggest_pipeline
+from fovea.pipeline.orchestrator import run_case
 
 
 def main():

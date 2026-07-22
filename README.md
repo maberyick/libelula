@@ -1,113 +1,112 @@
-# OpenMedPipe
+<div align="center">
 
-**A skeleton for building production medical-imaging AI pipelines.**
+<img src="assets/logo.svg" width="120" alt="Fovea logo" />
 
-Most medical-imaging AI dies between "it works in my notebook" and "the team uses it every day." OpenMedPipe is a small, opinionated **starting point** for the second part: a clean pattern for turning models into a pipeline that ingests a case, runs the right models, quality-checks the output, and serves a result — reliably and reproducibly.
+# Fovea
 
-It is **not** a framework you're locked into and **not** anyone's proprietary system. It's a scaffold you clone and make your own — like starting from a well-organized template instead of a blank folder.
+**An open skeleton for building production medical-imaging AI pipelines.**
 
-> Built and maintained by [BARTEK LLC](https://bartekllc.org). Use it, fork it, ship it.
+[![License](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](LICENSE)
+[![Python](https://img.shields.io/badge/python-3.9%2B-blue.svg)](pyproject.toml)
+[![Status](https://img.shields.io/badge/status-v0.1.0-informational.svg)](#)
+[![Maintained by BARTEK LLC](https://img.shields.io/badge/maintained%20by-BARTEK%20LLC-2bd4c0.svg)](https://bartekllc.org)
+
+*Turn models into a pipeline that ingests a case, runs the right models, quality-checks the output, and serves a result — reliably and reproducibly.*
+
+</div>
 
 ---
 
-## What you get
+Most medical-imaging AI dies between "it works in my notebook" and "the team uses it every day." **Fovea is a small, opinionated starting point for the second part** — the plumbing, not the model.
 
-- **One model contract** (`ModelPlugin`) — every model (yours, open-source, or a hosted API) implements the same tiny interface, so the rest of the system doesn't care what's inside. Add a model = implement one class.
-- **A stage orchestrator** — `ingest → preprocess → run models → aggregate → QC → output`, each stage isolated, timed, and logged. Plain Python by default; swap in Airflow/Prefect/Dagster for production without touching your models.
-- **Quality control** — a place to catch empty masks, out-of-range scores, and drift *before* a result is trusted.
-- **An optional local-LLM assistant** — suggests which models to run for a case (via a local [Ollama](https://ollama.com) model, so data never leaves your hardware). It's a *suggestion* the operator accepts or edits — not autopilot. Falls back to a rule if Ollama isn't running.
-- **Container + web stubs** — a Dockerfile template to wrap a model, and a minimal submission API.
-- **Runs out of the box** with two placeholder models and a dummy image — zero external dependencies.
+It's **not** a framework you're locked into, and **not** anyone's proprietary system. It's a scaffold you clone and make your own.
 
-## Architecture
+## ✨ Why Fovea
 
-```
-        ┌─────────────┐
-        │  Submit API │  (web/ — Flask/FastAPI stub)
-        └──────┬──────┘
-               │
-        ┌──────▼───────┐     ┌───────────────────────────────┐
-        │ Orchestrator │◄────│ LLM assistant (optional, local)│  suggests the pipeline
-        │ (pipeline/)  │     │  assistant/ — Ollama           │
-        └──────┬───────┘     └───────────────────────────────┘
-               │  runs, in order, each registered model:
-        ┌──────▼───────────────────────────────┐
-        │  Model A → Model B → …  (models/)     │  one common ModelPlugin contract
-        │  (each wrappable in a container)      │
-        └──────┬───────────────────────────────┘
-               │
-        ┌──────▼──────┐     ┌──────────────┐
-        │     QC       │────▶│   Output      │  mask / score / report
-        │  (qc/)       │     │  + run report │
-        └──────────────┘     └──────────────┘
-```
+- **One model contract** — every model (yours, open-source, or a hosted API) implements the same tiny `ModelPlugin` interface. Add a model = write one class.
+- **A stage orchestrator** — `ingest → preprocess → models → QC → output`, each stage isolated, timed, logged. Plain Python by default; swap in Airflow/Prefect/Dagster for production without touching your models.
+- **Quality control** — catch empty masks, out-of-range scores, and drift *before* a result is trusted.
+- **Optional local-LLM assistant** — a local [Ollama](https://ollama.com) model *suggests* which models to run (data never leaves your hardware). A suggestion, not autopilot. Falls back to a rule if Ollama isn't running.
+- **Runs out of the box** — two placeholder models + a dummy image, zero external deps.
 
-## Quickstart
+## 🚀 Quickstart
 
 ```bash
-git clone https://github.com/<you>/openmedpipe.git
-cd openmedpipe
-pip install -e .            # installs the package
-python examples/run_local.py
+git clone https://github.com/<you>/fovea.git
+cd fovea
+pip install -e .
+
+fovea run --demo          # run the demo pipeline
+fovea models              # list available models
+fovea suggest "segment the lesion and score it"
 ```
 
-Expected output:
-
+```text
+$ fovea run --demo
+{
+  "status": "ok",
+  "plan": ["threshold-segmenter", "region-scorer"],
+  "score": { "score": 14.06 },
+  "qc": { "nonempty_mask": { "pass": true, "coverage": 0.14 } }
+}
 ```
-Suggested pipeline: ['threshold-segmenter', 'region-scorer']
-Status: ok
-Score: {'score': 14.06}
-QC: {'nonempty_mask': {'pass': True, 'coverage': 0.1406, ...}}
+
+## 🧭 Architecture
+
+```mermaid
+flowchart LR
+    S["Submit<br/>(web/)"] --> O["Orchestrator<br/>(pipeline/)"]
+    A["LLM assistant<br/>(assistant/ · local Ollama)"] -. suggests pipeline .-> O
+    O --> M["Models<br/>(models/ · one ModelPlugin contract)"]
+    M --> Q["QC<br/>(qc/)"]
+    Q --> R["Output<br/>mask · score · run report"]
 ```
 
-## Make it yours
+Each model is wrappable in its own container; the orchestrator, QC, and assistant never care what's inside.
 
-1. **Add a model** — subclass `ModelPlugin` in `openmedpipe/models/`, implement `run()`, and `@register` it:
-   ```python
-   from openmedpipe.models.base import ModelPlugin, ModelResult
-   from openmedpipe.models.registry import register
+## 🔧 Make it yours
 
-   @register
-   class MySegmenter(ModelPlugin):
-       name = "my-segmenter"
-       modality = "oct-bscan"
-       description = "Retinal layer segmentation."
-       def run(self, case):
-           mask = my_model(case["image"])
-           return ModelResult(self.name, output=mask)
-   ```
-2. **Wire the stages** — edit the model list you pass to `run_case()`, or let the assistant suggest it.
-3. **Add QC checks** in `openmedpipe/qc/checks.py`.
-4. **Containerize** each model with `containers/Dockerfile.model`.
-5. **Go to production** — replace `pipeline/orchestrator.py` with an Airflow DAG; the model contract, registry, QC, and assistant stay the same.
+```python
+from fovea.models.base import ModelPlugin, ModelResult
+from fovea.models.registry import register
 
-## What it is / isn't
+@register
+class MySegmenter(ModelPlugin):
+    name = "my-segmenter"
+    modality = "oct-bscan"
+    description = "Retinal layer segmentation."
+    def run(self, case):
+        mask = my_model(case["image"])
+        return ModelResult(self.name, output=mask)
+```
+
+Then `fovea run --models my-segmenter,region-scorer` — or let the assistant choose. Add QC in `fovea/qc/`, containerize with `containers/Dockerfile.model`, and swap the orchestrator for an Airflow DAG when you productionize. See [docs/architecture.md](docs/architecture.md).
+
+## 📦 What it is / isn't
 
 | It IS | It ISN'T |
 |---|---|
-| A clean starting pattern for imaging-AI pipelines | A turnkey product or a heavy framework |
-| Model-agnostic (bring any model) | Tied to a specific model or vendor |
-| A teaching/reference scaffold | Anyone's proprietary pipeline |
-| Yours to fork and extend | Medical advice or a regulatory-cleared system |
+| A clean starting pattern for imaging-AI pipelines | A turnkey product or heavy framework |
+| Model-agnostic (bring any model) | Tied to a vendor or dataset |
+| A teaching / reference scaffold | Anyone's proprietary pipeline |
+| Yours to fork and ship | Medical advice or a cleared device |
 
-## Repo layout
+## 📂 Layout
 
 ```
-openmedpipe/
+fovea/
 ├─ models/       ModelPlugin contract + registry + example models
 ├─ pipeline/     orchestrator (stage runner)
 ├─ qc/           quality-control checks
 ├─ assistant/    optional local-LLM pipeline suggester (Ollama)
-└─ web/          minimal submission API stub
-containers/      Dockerfile template to wrap a model
-examples/        end-to-end demo
-docs/            architecture + how-to-extend
+├─ web/          submission API stub (FastAPI)
+└─ cli.py        the `fovea` command
 ```
 
-## License
+## 🤝 Contributing
 
-Apache-2.0 — free for commercial and private use. See [LICENSE](LICENSE).
+Issues and PRs welcome — see [CONTRIBUTING.md](CONTRIBUTING.md). Built and maintained by [**BARTEK LLC**](https://bartekllc.org).
 
-## Contributing
+## 📄 License
 
-Issues and PRs welcome — see [CONTRIBUTING.md](CONTRIBUTING.md). If you build something with it, tell us.
+[Apache-2.0](LICENSE) — free for commercial and private use.

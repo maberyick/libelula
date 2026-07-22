@@ -1,16 +1,16 @@
 """Minimal submission API stub (FastAPI).
 
     pip install -e ".[web]"
-    uvicorn openmedpipe.web.app:app --reload
+    uvicorn fovea.web.app:app --reload
 
 POST a case; it runs through the pipeline and returns the report. Replace the
 in-memory demo with real storage + a queue for production.
 """
 from __future__ import annotations
 import numpy as np
-from openmedpipe.models import example_model  # noqa: F401 (registers models)
-from openmedpipe.assistant.suggest import suggest_pipeline
-from openmedpipe.pipeline.orchestrator import run_case
+from fovea.models import example_model  # noqa: F401 (registers models)
+from fovea.assistant.suggest import suggest_pipeline
+from fovea.pipeline.orchestrator import run_case
 
 try:
     from fastapi import FastAPI
