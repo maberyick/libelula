@@ -23,28 +23,41 @@ PAD, LH, FS = 22, 34, 20
 font = ImageFont.truetype(FONT, FS)
 
 
-def frame(n_lines):
+def frame(n_lines, cmd_chars=None, cursor=False):
+    """Render the terminal. n_lines = how many lines shown; cmd_chars limits the
+    typed command length (for the typing effect); cursor draws a block cursor."""
     im = Image.new("RGB", (W, H), BG)
     d = ImageDraw.Draw(im)
-    # title bar dots
     for i, c in enumerate([(255, 95, 86), (255, 189, 46), (39, 201, 63)]):
         d.ellipse([PAD + i * 22, 16, PAD + i * 22 + 12, 28], fill=c)
     y = 48
-    for line in LINES[:n_lines]:
+    for li, line in enumerate(LINES[:n_lines]):
         x = PAD
         for text, color in line:
-            d.text((x, y), text, font=font, fill=color)
-            x += d.textlength(text, font=font)
+            # on the command line, optionally show only the first cmd_chars of the command
+            if li == 0 and color == WHITE and cmd_chars is not None:
+                text = text[:cmd_chars]
+            if text:
+                d.text((x, y), text, font=font, fill=color)
+                x += d.textlength(text, font=font)
+        if cursor and li == n_lines - 1:
+            d.rectangle([x + 1, y + 3, x + 11, y + FS + 2], fill=(230, 237, 243))
         y += LH
     return im
 
 
 def main():
+    cmd = "libe run --demo"
     frames, durations = [], []
-    frames.append(frame(1)); durations.append(700)          # command
+    # 1. type the command char-by-char (with cursor)
+    for k in range(1, len(cmd) + 1):
+        frames.append(frame(1, cmd_chars=k, cursor=True)); durations.append(70)
+    frames.append(frame(1, cmd_chars=len(cmd), cursor=True)); durations.append(450)  # pause before "enter"
+    # 2. stream the output lines one at a time
     for i in range(2, len(LINES) + 1):
-        frames.append(frame(i)); durations.append(650)       # reveal each output line
-    frames.append(frame(len(LINES))); durations.append(2200)  # hold
+        frames.append(frame(i, cursor=(i < len(LINES)))); durations.append(600)
+    # 3. hold the final frame
+    frames.append(frame(len(LINES))); durations.append(2400)
     out = os.path.join(os.path.dirname(__file__), "demo.gif")
     frames[0].save(out, save_all=True, append_images=frames[1:],
                    duration=durations, loop=0, optimize=True)
