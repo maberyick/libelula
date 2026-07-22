@@ -87,16 +87,16 @@ from libelula.models.base import ModelPlugin, ModelResult
 from libelula.models.registry import register
 
 @register
-class MySegmenter(ModelPlugin):
-    name = "my-segmenter"
-    modality = "oct-bscan"
-    description = "Retinal layer segmentation."
+class NucleiSegmenter(ModelPlugin):
+    name = "nuclei-segmenter"
+    modality = "wsi-tile"
+    description = "Nucleus segmentation on H&E tiles."
     def run(self, case):
         mask = my_model(case["image"])
         return ModelResult(self.name, output=mask)
 ```
 
-Then `libe run --models my-segmenter,region-scorer` — or let the assistant choose. Add QC in `libelula/qc/`, containerize with `containers/Dockerfile.model`, and swap the orchestrator for an Airflow DAG when you productionize. See [docs/architecture.md](docs/architecture.md).
+Then `libe run --models nuclei-segmenter,region-scorer` — or let the assistant choose. Add QC in `libelula/qc/`, containerize with `containers/Dockerfile.model`, and swap the orchestrator for an Airflow DAG when you productionize. See [docs/architecture.md](docs/architecture.md).
 
 ## 📦 What it is / isn't
 

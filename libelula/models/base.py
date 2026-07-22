@@ -23,7 +23,7 @@ class ModelPlugin(ABC):
 
     #: short unique id used in configs and by the assistant
     name: str = "unnamed-model"
-    #: what kind of input this model expects (e.g. "wsi", "oct-bscan", "ct-volume")
+    #: what kind of input this model expects (e.g. "wsi-tile", "ct-volume", "generic-image")
     modality: str = "generic"
     #: free-text description the LLM assistant reads when choosing models
     description: str = ""
