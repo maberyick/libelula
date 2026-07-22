@@ -6,10 +6,13 @@
 
 **Small pipeline, sharp vision.** — an open skeleton for building production medical-imaging AI pipelines.
 
+[![CI](https://github.com/maberyick/libelula/actions/workflows/ci.yml/badge.svg)](https://github.com/maberyick/libelula/actions/workflows/ci.yml)
 [![License](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](LICENSE)
 [![Python](https://img.shields.io/badge/python-3.9%2B-blue.svg)](pyproject.toml)
 [![Version](https://img.shields.io/badge/v0.1.0-informational.svg)](#)
 [![BARTEK LLC](https://img.shields.io/badge/by-BARTEK%20LLC-2bd4c0.svg)](https://bartekllc.org)
+
+<img src="assets/demo.gif" width="620" alt="libe run demo" />
 
 </div>
 
@@ -50,6 +53,14 @@ $ libe suggest "segment the lesion and score it"
 ```
 
 Runs out of the box — two placeholder models + a dummy image, zero external deps.
+
+**More examples:**
+```bash
+pip install -e ".[examples]"
+python examples/run_realistic.py     # real Otsu + connected-component segmentation
+cat examples/airflow_dag.py          # same pipeline as an Airflow DAG (productionize)
+pytest -q                            # the test suite (pip install -e ".[dev]")
+```
 
 ## 🧭 Architecture
 

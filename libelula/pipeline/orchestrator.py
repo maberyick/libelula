@@ -59,6 +59,7 @@ def run_case(case: dict, model_names: list[str],
 
     # 3. QC (before anything is trusted)
     rep.qc.update(checks.run_all(rep.stage_outputs))
-    rep.status = "ok" if all(v.get("pass", True) for v in rep.qc.values()
-                             if isinstance(v, dict)) else "qc-flagged"
+    qc_ok = all(v.get("pass", True) for v in rep.qc.values() if isinstance(v, dict))
+    if rep.status != "error":                    # don't overwrite an unhealthy-model error
+        rep.status = "ok" if qc_ok else "qc-flagged"
     return rep
