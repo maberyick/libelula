@@ -17,7 +17,7 @@ try:
 except ImportError:  # keep import-safe without the web extra
     FastAPI = None
 
-app = FastAPI(title="OpenMedPipe") if FastAPI else None
+app = FastAPI(title="libelula") if FastAPI else None
 
 if app:
     @app.get("/health")
