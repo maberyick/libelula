@@ -22,6 +22,8 @@ Most medical-imaging AI dies between "it works in my notebook" and "the team use
 
 It's **not** a framework you're locked into, and **not** anyone's proprietary system. It's a scaffold you clone and make your own.
 
+It's the same pattern behind real **pathomics** (digital-pathology feature/segmentation pipelines) and **radiomics** (radiology) platforms — where a team needs to host many analysis tools behind one reproducible, orchestrated workflow.
+
 ## 🜛 Why *libélula*?
 
 *Libélula* is Spanish for **dragonfly** — and a dragonfly is exactly what a good pipeline should be:
