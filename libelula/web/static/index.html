@@ -114,9 +114,23 @@
     document.getElementById('planline').textContent = 'ran: ' + (r.plan||[]).join('  →  ');
     light(stages.length);
   }
-  // demo result so the console looks live on load (works even opened as a file)
-  render({status:'ok', plan:['threshold-segmenter','region-scorer'], score:{score:14.06},
-          qc:{nonempty_mask:{pass:true, coverage:0.14}}, timings:{a:0.0001}});
+  const DEMO = {status:'ok', plan:['threshold-segmenter','region-scorer'], score:{score:14.06},
+                qc:{nonempty_mask:{pass:true, coverage:0.14}}, timings:{a:0.0001}};
+  function clearResult(running) {
+    const st = document.getElementById('status'); st.textContent = running ? 'running…' : '—';
+    st.className = 'pill' + (running ? '' : ' ok');
+    ['plan','score','qc','ms'].forEach(id => document.getElementById(id).textContent = '—');
+    document.getElementById('planline').textContent = running ? 'running the pipeline…' : '';
+  }
+  // ?stage=N drives the animation frames; no param = fully populated (static screenshot)
+  const P = new URLSearchParams(location.search);
+  if (P.has('stage')) {
+    const s = parseInt(P.get('stage'));
+    light(s);
+    if (s >= stages.length) render(DEMO); else clearResult(s >= 0);
+  } else {
+    render(DEMO);
+  }
   // when served by the FastAPI app, the button hits the real endpoint
   document.getElementById('run').onclick = async () => {
     light(0);

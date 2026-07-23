@@ -71,7 +71,7 @@ pip install -e ".[web]"
 libe serve            # → http://127.0.0.1:8000
 ```
 
-<div align="center"><img src="assets/ui.png" width="720" alt="libélula web console" /></div>
+<div align="center"><img src="assets/console.gif" width="720" alt="libélula web console" /></div>
 
 A minimal, self-contained console for the **submit → monitor → review** loop — a starting point you extend, not a heavyweight app.
 
