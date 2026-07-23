@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>libélula — pipeline console</title>
+<style>
+  :root { --bg:#0d1117; --panel:#161b22; --line:#232b36; --ink:#e6edf3; --dim:#8b949e;
+          --teal:#2bd4c0; --pink:#f7b7d2; --lav:#c9b6e4; --mint:#a8e6cf; --amber:#f0a92e; }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--bg); color:var(--ink);
+         font-family:-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif; }
+  header { display:flex; align-items:center; gap:14px; padding:18px 26px; border-bottom:1px solid var(--line); }
+  header .title { font-size:22px; font-weight:700; letter-spacing:.5px; }
+  header .tag { color:var(--dim); font-size:13px; }
+  .wrap { display:grid; grid-template-columns:320px 1fr; gap:20px; padding:24px 26px; max-width:1100px; }
+  .card { background:var(--panel); border:1px solid var(--line); border-radius:14px; padding:18px 20px; }
+  .card h2 { margin:0 0 14px; font-size:14px; text-transform:uppercase; letter-spacing:1px; color:var(--dim); }
+  label { display:block; font-size:12px; color:var(--dim); margin:12px 0 5px; }
+  select { width:100%; background:#0f141b; color:var(--ink); border:1px solid var(--line);
+           border-radius:8px; padding:9px 10px; font-size:14px; }
+  button { margin-top:18px; width:100%; background:var(--teal); color:#04121a; border:0;
+           border-radius:9px; padding:11px; font-size:14px; font-weight:700; cursor:pointer; }
+  button:hover { filter:brightness(1.06); }
+  .flow { display:flex; align-items:center; gap:8px; flex-wrap:wrap; margin-bottom:18px; }
+  .stage { flex:1; min-width:90px; text-align:center; background:#0f141b; border:1px solid var(--line);
+           border-radius:10px; padding:12px 6px; font-size:12px; transition:.25s; }
+  .stage.on { border-color:var(--teal); box-shadow:0 0 0 1px var(--teal) inset; }
+  .stage.done { border-color:var(--mint); }
+  .stage .n { display:block; color:var(--dim); font-size:10px; margin-bottom:3px; }
+  .arrow { color:var(--dim); }
+  .kv { display:flex; justify-content:space-between; padding:8px 0; border-bottom:1px solid var(--line); font-size:14px; }
+  .kv:last-child { border:0; }
+  .pill { padding:2px 9px; border-radius:20px; font-size:12px; font-weight:700; }
+  .ok { background:rgba(43,212,192,.15); color:var(--teal); }
+  .thumb { width:100%; border-radius:10px; border:1px solid var(--line); margin-top:10px; }
+  footer { color:var(--dim); font-size:12px; text-align:center; padding:16px; border-top:1px solid var(--line); }
+  a { color:var(--teal); text-decoration:none; }
+</style>
+</head>
+<body>
+  <header>
+    <svg width="34" height="34" viewBox="0 0 208 208" shape-rendering="crispEdges" aria-label="libélula">
+      <g>
+        <rect x="18" y="18" width="24" height="24" fill="#ffd98a"/><rect x="90" y="18" width="24" height="24" fill="#ffd98a"/>
+        <rect x="14" y="54" width="180" height="24" fill="#c9b6e4"/><rect x="26" y="78" width="156" height="24" fill="#f7b7d2"/>
+        <rect x="98" y="30" width="12" height="150" fill="#a8e6cf"/>
+        <rect x="86" y="162" width="36" height="12" fill="#a8e6cf"/>
+      </g>
+    </svg>
+    <div>
+      <div class="title">libélula</div>
+      <div class="tag">medical-imaging AI pipeline · console</div>
+    </div>
+  </header>
+
+  <div class="wrap">
+    <div class="card">
+      <h2>Submit a case</h2>
+      <label>Modality</label>
+      <select id="modality">
+        <option value="wsi-tile">Whole-slide / H&amp;E tile</option>
+        <option value="generic-image">Generic image</option>
+      </select>
+      <label>Case</label>
+      <select id="case"><option>demo — synthetic H&amp;E</option></select>
+      <button id="run">Run pipeline ▸</button>
+      <p style="color:var(--dim);font-size:11px;margin-top:14px">Demo mode — runs the built-in example pipeline.</p>
+    </div>
+
+    <div>
+      <div class="card" style="margin-bottom:20px">
+        <h2>Pipeline</h2>
+        <div class="flow" id="flow">
+          <div class="stage" data-s="ingest"><span class="n">01</span>Ingest</div>
+          <span class="arrow">→</span>
+          <div class="stage" data-s="preprocess"><span class="n">02</span>Preprocess</div>
+          <span class="arrow">→</span>
+          <div class="stage" data-s="models"><span class="n">03</span>Models</div>
+          <span class="arrow">→</span>
+          <div class="stage" data-s="qc"><span class="n">04</span>QC</div>
+          <span class="arrow">→</span>
+          <div class="stage" data-s="output"><span class="n">05</span>Output</div>
+        </div>
+        <div id="planline" style="color:var(--dim);font-size:13px"></div>
+      </div>
+
+      <div class="card">
+        <h2>Result</h2>
+        <div class="kv"><span>Status</span><span id="status" class="pill ok">ok</span></div>
+        <div class="kv"><span>Pipeline</span><span id="plan">threshold-segmenter → region-scorer</span></div>
+        <div class="kv"><span>Score</span><span id="score">14.06</span></div>
+        <div class="kv"><span>QC</span><span id="qc">nonempty_mask · pass (coverage 0.14)</span></div>
+        <div class="kv"><span>Runtime</span><span id="ms">0.1 ms</span></div>
+      </div>
+    </div>
+  </div>
+
+  <footer>powered by <b>libélula</b> · <a href="https://github.com/maberyick/libelula">github.com/maberyick/libelula</a> · Apache-2.0 · BARTEK LLC</footer>
+
+<script>
+  const stages = [...document.querySelectorAll('.stage')];
+  function light(done) {
+    stages.forEach((s,i)=>{ s.classList.remove('on','done'); if(i<done) s.classList.add('done'); if(i===done) s.classList.add('on'); });
+  }
+  function render(r) {
+    document.getElementById('status').textContent = r.status;
+    document.getElementById('plan').textContent = (r.plan||[]).join(' → ');
+    document.getElementById('score').textContent = r.score ? r.score.score : '—';
+    const qk = Object.keys(r.qc||{})[0];
+    document.getElementById('qc').textContent = qk ? `${qk} · ${r.qc[qk].pass?'pass':'FLAG'} (coverage ${r.qc[qk].coverage??''})` : '—';
+    const ms = r.timings ? Object.values(r.timings).reduce((a,b)=>a+b,0)*1000 : 0;
+    document.getElementById('ms').textContent = ms.toFixed(1)+' ms';
+    document.getElementById('planline').textContent = 'ran: ' + (r.plan||[]).join('  →  ');
+    light(stages.length);
+  }
+  // demo result so the console looks live on load (works even opened as a file)
+  render({status:'ok', plan:['threshold-segmenter','region-scorer'], score:{score:14.06},
+          qc:{nonempty_mask:{pass:true, coverage:0.14}}, timings:{a:0.0001}});
+  // when served by the FastAPI app, the button hits the real endpoint
+  document.getElementById('run').onclick = async () => {
+    light(0);
+    try {
+      const res = await fetch('/run', {method:'POST'});
+      render(await res.json());
+    } catch(e) { /* file mode: keep the demo result */ light(stages.length); }
+  };
+</script>
+</body>
+</html>
