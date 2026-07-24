@@ -1,5 +1,6 @@
 """libélula CLI — drive the pipeline from the terminal.
 
+    libe                      show the dragonfly banner + commands
     libe run [--demo]         run a case through the pipeline
     libe models               list registered models
     libe suggest "<task>"     ask the assistant which models to run
@@ -23,6 +24,69 @@ def _c(s, color):
 def header():
     print(_c(f"  ✦ libélula v{VERSION}", TEAL) +
           _c("  — medical-imaging AI pipeline · agile, precise", DIM))
+
+
+# Pixel-art dragonfly (matches assets/logo.svg), rendered with half-blocks + truecolor.
+_ART = [
+    ".....ee.ee.....",
+    ".....ee.ee.....",
+    ".......h.......",
+    ".UUUUUUaUUUUUU.",
+    "UUUUUUUaUUUUUUU",
+    ".UUUUUUaUUUUUU.",
+    "..PPPPPaPPPPP..",
+    "...PPPPaPPPP...",
+    "....PPPaPPP....",
+    ".......a.......",
+    ".......a.......",
+    ".......a.......",
+    ".......a.......",
+    "......aaa......",
+    ".......a.......",
+]
+_ART_RGB = {
+    "e": (255, 217, 138),  # eyes — peach
+    "h": (127, 209, 184),  # head — teal
+    "a": (168, 230, 207),  # body — mint
+    "U": (201, 182, 228),  # front wings — lavender
+    "P": (247, 183, 210),  # hind wings — pink
+}
+
+
+def mascot():
+    """Compact colored dragonfly for the terminal (empty string when piped)."""
+    if not sys.stdout.isatty():
+        return ""
+    grid = _ART + (["." * len(_ART[0])] if len(_ART) % 2 else [])
+    fg = lambda c: f"\033[38;2;{c[0]};{c[1]};{c[2]}m"
+    bg = lambda c: f"\033[48;2;{c[0]};{c[1]};{c[2]}m"
+    lines = []
+    for y in range(0, len(grid), 2):
+        top, bot, s = grid[y], grid[y + 1], "   "
+        for x in range(len(top)):
+            t, b = _ART_RGB.get(top[x]), _ART_RGB.get(bot[x])
+            if t and b:
+                s += fg(t) + bg(b) + "▀" + RST
+            elif t:
+                s += fg(t) + "▀" + RST
+            elif b:
+                s += fg(b) + "▄" + RST
+            else:
+                s += " "
+        lines.append(s)
+    return "\n".join(lines)
+
+
+def banner():
+    art = mascot()
+    if art:
+        print("\n" + art + "\n")
+    header()
+    print(_c("  \U0001fab0 all eyes · precise · agile — a skeleton for medical-imaging AI pipelines", DIM))
+
+
+def cmd_banner(args):
+    banner()
 
 
 def _load_models():
@@ -87,8 +151,9 @@ def _demo_image():
 
 def main(argv=None):
     p = argparse.ArgumentParser(prog="libe", description="libélula — medical-imaging AI pipeline skeleton")
-    sub = p.add_subparsers(dest="cmd", required=True)
+    sub = p.add_subparsers(dest="cmd")
 
+    sub.add_parser("banner", help="show the dragonfly banner").set_defaults(fn=cmd_banner)
     sub.add_parser("models", help="list registered models").set_defaults(fn=cmd_models)
 
     s = sub.add_parser("suggest", help="assistant suggests which models to run")
@@ -110,6 +175,10 @@ def main(argv=None):
     v.set_defaults(fn=cmd_serve)
 
     args = p.parse_args(argv)
+    if not args.cmd:
+        banner()
+        print(_c("  run 'libe --help' for commands", DIM))
+        return
     args.fn(args)
 
 
