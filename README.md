@@ -41,6 +41,12 @@ pip install -e .
 ```
 
 ```console
+$ libe
+     ▟▓▙  ▟▓▙          (a colored pixel dragonfly prints here — try it)
+  ▂▄▆█████▆▄▂
+  ✦ libélula v0.1.0  — medical-imaging AI pipeline · agile, precise
+  🪰 all eyes · precise · agile — a skeleton for medical-imaging AI pipelines
+
 $ libe run --demo
   ✦ libélula v0.1.0  — medical-imaging AI pipeline · agile, precise
   ✓ pipeline: threshold-segmenter → region-scorer
