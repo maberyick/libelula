@@ -35,7 +35,7 @@ except OSError:
     MONO = MONOB = ImageFont.load_default()
 
 
-def frame(cmd, rows, header=False, tag=False, cursor=False):
+def frame(cmd, rows, header=False, tag=False, cursor=False, wing_dy=0):
     im = Image.new("RGB", (W, H), BG)
     d = ImageDraw.Draw(im)
     d.text((PAD, PAD), "$ ", font=MONOB, fill=GREEN)
@@ -43,8 +43,10 @@ def frame(cmd, rows, header=False, tag=False, cursor=False):
     top = PAD + 42
     for cy in range(rows):
         for x in range(COLS):
-            t, b = RGB.get(ART[2 * cy][x]), RGB.get(ART[2 * cy + 1][x])
-            px, py = PAD + x * CW, top + cy * CH
+            tc, bc = ART[2 * cy][x], ART[2 * cy + 1][x]
+            t, b = RGB.get(tc), RGB.get(bc)
+            dy = wing_dy if (tc in "UP" or bc in "UP") else 0  # flap the wings
+            px, py = PAD + x * CW, top + cy * CH + dy
             if t:
                 d.rectangle([px, py, px + CW - 1, py + CH // 2 - 1], fill=t)
             if b:
@@ -67,8 +69,11 @@ def main():
     frames.append(frame(cmd, 0)); durs.append(300)
     for r in range(1, DRAGON_ROWS + 1):    # dragonfly draws in
         frames.append(frame(cmd, r)); durs.append(70)
-    frames.append(frame(cmd, DRAGON_ROWS, header=True)); durs.append(350)
-    frames.append(frame(cmd, DRAGON_ROWS, header=True, tag=True)); durs.append(2200)
+    frames.append(frame(cmd, DRAGON_ROWS, header=True)); durs.append(300)
+    for _ in range(2):                     # two wing-flaps, then settle
+        for off in (-4, -7, -4, 0):
+            frames.append(frame(cmd, DRAGON_ROWS, header=True, tag=True, wing_dy=off)); durs.append(90)
+    frames.append(frame(cmd, DRAGON_ROWS, header=True, tag=True)); durs.append(2400)
     out = os.path.join(D, "libe-banner.gif")
     frames[0].save(out, save_all=True, append_images=frames[1:], duration=durs, loop=0, optimize=True)
     frames[-1].save(os.path.join(D, "libe-banner.png"))
